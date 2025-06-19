@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spend Bill Gates' Fortune</title>
+    <title>Spend Bill Gates' Fortune - Ultimate Edition</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <style>
         :root {
             --primary: #2c3e50;
@@ -195,6 +196,11 @@
             background: var(--warning);
             color: white;
         }
+        
+        .btn-feedback {
+            background: var(--primary);
+            color: white;
+        }
 
         .notification {
             position: fixed;
@@ -219,6 +225,76 @@
 
         .error {
             background: var(--danger);
+        }
+        
+        /* Feedback Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .close-btn {
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .form-group textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        
+        .rating {
+            display: flex;
+            justify-content: space-between;
+            margin: 15px 0;
+        }
+        
+        .rating-option {
+            text-align: center;
         }
 
         @media (max-width: 768px) {
@@ -260,7 +336,64 @@
         <footer>
             <button id="reset-btn" class="btn btn-reset">Reset Game</button>
             <button id="undo-btn" class="btn btn-undo" disabled>Undo</button>
+           <a href="https://docs.google.com/forms/d/e/1FAIpQLSdidZnXnqFF6zGNSZ8C_DwPtQRh_tYDqSpDAt5NV58wXfzQxQ/viewform?usp=dialog">
+            <button>Click here to submit</button>
+           </a>
         </footer>
+    </div>
+
+    <!-- Feedback Modal -->
+    <div id="feedback-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Give Us Feedback</h2>
+                <span class="close-btn">&times;</span>
+            </div>
+            <form id="feedback-form" action="https://docs.google.com/forms/d/e/1FAIpQLSdidZnXnqFF6zGNSZ8C_DwPtQRh_tYDqSpDAt5NV58wXfzQxQ/formResponse" method="POST" target="_blank">
+                <div class="form-group">
+                    <label for="feedback-name">Your Name (Optional)</label>
+                    <input type="text" id="feedback-name" name="entry.2005620554">
+                </div>
+                
+                <div class="form-group">
+                    <label for="feedback-email">Email (Optional)</label>
+                    <input type="email" id="feedback-email" name="entry.1045781291">
+                </div>
+                
+                <div class="form-group">
+                    <label>How would you rate this game?</label>
+                    <div class="rating">
+                        <div class="rating-option">
+                            <input type="radio" id="rating1" name="entry.1065046570" value="1 Star">
+                            <label for="rating1">1 ★</label>
+                        </div>
+                        <div class="rating-option">
+                            <input type="radio" id="rating2" name="entry.1065046570" value="2 Stars">
+                            <label for="rating2">2 ★★</label>
+                        </div>
+                        <div class="rating-option">
+                            <input type="radio" id="rating3" name="entry.1065046570" value="3 Stars">
+                            <label for="rating3">3 ★★★</label>
+                        </div>
+                        <div class="rating-option">
+                            <input type="radio" id="rating4" name="entry.1065046570" value="4 Stars">
+                            <label for="rating4">4 ★★★★</label>
+                        </div>
+                        <div class="rating-option">
+                            <input type="radio" id="rating5" name="entry.1065046570" value="5 Stars">
+                            <label for="rating5">5 ★★★★★</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="feedback-message">Your Feedback</label>
+                    <textarea id="feedback-message" name="entry.839337160" required></textarea>
+                </div>
+                
+                <button type="submit" class="btn" style="background: var(--success); color: white; width: 100%;">Submit Feedback</button>
+            </form>
+        </div>
     </div>
 
     <div id="notification" class="notification"></div>
@@ -268,48 +401,48 @@
     <script>
         // Game Data
         const gameData = {
-            money: 139560000000000, // 
-            initialMoney: 139560000000000,
+            money: 130000000000, // $130 Billion
+            initialMoney: 130000000000,
             purchases: [],
             items: [
                 {
                     category: "🏠 Luxury",
                     items: [
-                        { name: "Luxury Yacht", price: 1000 },
-                        { name: "Private Jet", price: 15000 },
-                        { name: "Superyacht", price: 250000 },
-                        { name: "Mansion", price: 5000},
-                        { name: "Private Island", price: 75000 }
+                        { name: "Luxury Yacht", price: 100000000 },
+                        { name: "Private Jet", price: 70000000 },
+                        { name: "Superyacht", price: 500000000 },
+                        { name: "Mansion", price: 50000000 },
+                        { name: "Private Island", price: 100000000 }
                     ]
                 },
                 {
                     category: "💻 Tech",
                     items: [
-                        { name: "Twitter (X)", price: 440000 },
-                        { name: "Netflix", price: 2600000 },
-                        { name: "NBA Team", price: 800000 },
-                        { name: "AI Startup", price: 50000},
-                        { name: "SpaceX Shares", price: 20000 }
+                        { name: "Twitter (X)", price: 44000000000 },
+                        { name: "Netflix", price: 100000000000 },
+                        { name: "NBA Team", price: 3000000000 },
+                        { name: "AI Startup", price: 5000000000 },
+                        { name: "SpaceX Shares", price: 10000000000 }
                     ]
                 },
                 {
                     category: "❤️ Charity",
                     items: [
-                        { name: "End World Hunger", price: 500000},
-                        { name: "Global Education", price: 1000000 },
-                        { name: "Vaccinate Africa", price: 2000000 },
-                        { name: "Build Hospitals", price: 5000000 },
-                        { name: "Climate Research", price: 3000000 }
+                        { name: "End World Hunger", price: 30000000000 },
+                        { name: "Global Education", price: 50000000000 },
+                        { name: "Vaccinate Africa", price: 10000000000 },
+                        { name: "Build Hospitals", price: 20000000000 },
+                        { name: "Climate Research", price: 50000000000 }
                     ]
                 },
                 {
                     category: "🎲 Random",
                     items: [
-                        { name: "Lifetime Pizza Supply", price: 10000 },
-                        { name: "Gold Toilet", price: 500000 },
-                        { name: "Moon Rock", price: 300000 },
-                        { name: "Diamond Watch", price: 5000 },
-                        { name: "Sports Car Collection", price: 10000 }
+                        { name: "Lifetime Pizza Supply", price: 1000000 },
+                        { name: "Gold Toilet", price: 5000000 },
+                        { name: "Moon Rock", price: 10000000 },
+                        { name: "Diamond Watch", price: 500000 },
+                        { name: "Sports Car Collection", price: 10000000 }
                     ]
                 }
             ]
@@ -325,7 +458,11 @@
             itemsBought: document.getElementById('items-bought'),
             resetBtn: document.getElementById('reset-btn'),
             undoBtn: document.getElementById('undo-btn'),
-            notification: document.getElementById('notification')
+            feedbackBtn: document.getElementById('feedback-btn'),
+            notification: document.getElementById('notification'),
+            feedbackModal: document.getElementById('feedback-modal'),
+            closeBtn: document.querySelector('.close-btn'),
+            feedbackForm: document.getElementById('feedback-form')
         };
 
         // Helper Functions
@@ -339,6 +476,23 @@
             setTimeout(() => {
                 elements.notification.classList.remove('show');
             }, 3000);
+        };
+
+        const celebratePurchase = () => {
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+        };
+
+        // Modal Functions
+        const openModal = () => {
+            elements.feedbackModal.style.display = 'flex';
+        };
+
+        const closeModal = () => {
+            elements.feedbackModal.style.display = 'none';
         };
 
         // Game Logic
@@ -407,6 +561,9 @@
             
             // Enable/disable undo button
             elements.undoBtn.disabled = gameData.purchases.length === 0;
+
+            // Save to localStorage
+            localStorage.setItem('billGatesGame', JSON.stringify(gameData));
         };
 
         const buyItem = (name, price) => {
@@ -414,7 +571,11 @@
                 gameData.money -= price;
                 gameData.purchases.push({ name, price });
                 updateUI();
-                renderItems(); // Re-render to disable buttons if needed
+                renderItems();
+                
+                // Celebrate big purchases
+                if (price > 1000000000) celebratePurchase();
+                
                 showNotification(`Purchased: ${name}`, 'success');
                 return true;
             } else {
@@ -441,8 +602,39 @@
             showNotification('Game reset!', 'success');
         };
 
+        const handleFeedbackSubmit = (e) => {
+            e.preventDefault();
+            
+            // Submit to Google Forms
+            const form = e.target;
+            fetch(form.action, {
+                method: 'POST',
+                body: new FormData(form),
+                mode: 'no-cors'
+            }).then(() => {
+                showNotification('Thank you for your feedback!', 'success');
+                closeModal();
+                form.reset();
+            }).catch(() => {
+                showNotification('Feedback sent! (You can close this window)', 'success');
+                closeModal();
+                form.reset();
+            });
+        };
+
+        // Load saved game
+        const loadGame = () => {
+            const savedGame = localStorage.getItem('billGatesGame');
+            if (savedGame) {
+                Object.assign(gameData, JSON.parse(savedGame));
+                updateUI();
+                renderItems();
+            }
+        };
+
         // Event Listeners
         document.addEventListener('DOMContentLoaded', () => {
+            loadGame();
             renderItems();
             updateUI();
             
@@ -458,6 +650,20 @@
             // Reset & Undo buttons
             elements.resetBtn.addEventListener('click', resetGame);
             elements.undoBtn.addEventListener('click', undoLastPurchase);
+            
+            // Feedback button
+            elements.feedbackBtn.addEventListener('click', openModal);
+            elements.closeBtn.addEventListener('click', closeModal);
+            
+            // Close modal when clicking outside
+            elements.feedbackModal.addEventListener('click', (e) => {
+                if (e.target === elements.feedbackModal) {
+                    closeModal();
+                }
+            });
+            
+            // Feedback form submission
+            elements.feedbackForm.addEventListener('submit', handleFeedbackSubmit);
         });
     </script>
 </body>
