@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spend Bill Gates' Fortune - Ultimate Edition</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: #f5f7fa;
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .money-display {
+            font-size: 1.8rem;
+            margin: 20px 0;
+        }
+
+        #money {
+            font-weight: bold;
+            color: var(--success);
+        }
+
+        .money-bar {
+            height: 15px;
+            background: #eee;
+            border-radius: 10px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        #money-progress {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, var(--success), var(--secondary));
+            transition: width 0.5s ease;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .category {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .category-header {
+            background: var(--secondary);
+            color: white;
+            padding: 10px 15px;
+            font-size: 1.2rem;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .item:last-child {
+            border-bottom: none;
+        }
+
+        .item-name {
+            font-weight: 500;
+        }
+
+        .item-price {
+            color: var(--primary);
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .btn-buy {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-buy:hover {
+            transform: scale(1.05);
+            opacity: 0.9;
+        }
+
+        .btn-buy:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+
+        .purchases {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .purchases-header {
+            background: var(--primary);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .stats {
+            display: flex;
+            gap: 10px;
+        }
+
+        .purchases-list {
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .purchase-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        footer {
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            background: #f8f9fa;
+            border-top: 1px solid #eee;
+        }
+
+        .btn-reset {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-undo {
+            background: var(--warning);
+            color: white;
+        }
+        
+        .btn-feedback {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-external-feedback {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+            transform: translateX(200%);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .success {
+            background: var(--success);
+        }
+
+        .error {
+            background: var(--danger);
+        }
+        
+        /* Feedback Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .close-btn {
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .form-group textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        
+        .rating {
+            display: flex;
+            justify-content: space-between;
+            margin: 15px 0;
+        }
+        
+        .rating-option {
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            footer {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="animate__animated animate__fadeInDown">
+            <h1>Spend Bill Gates' Fortune</h1>
+            <div class="money-display">
+                Remaining: <span id="money">$130,000,000,000</span>
+            </div>
+            <div class="money-bar">
+                <div id="money-progress"></div>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="items-container" id="items-container">
+                <!-- Items loaded via JS -->
+            </div>
+
+            <div class="purchases">
+                <div class="purchases-header">
+                    <h3>Your Purchases</h3>
+                    <div class="stats">
+                        <span id="total-spent">$0 spent</span>
+                        <span id="items-bought">0 items</span>
+                    </div>
+                </div>
+                <div class="purchases-list" id="purchases-list"></div>
+            </div>
+        </main>
+
+        <footer>
+            <button id="reset-btn" class="btn btn-reset">Reset Game</button>
+            <button id="undo-btn" class="btn btn-undo" disabled>Undo</button>
+            <a href="https://docs.google.com/forms/d/e/1FAIpQLSdidZnXnqFF6zGNSZ8C_DwPtQRh_tYDqSpDAt5NV58wXfzQxQ/viewform?usp=pp_url" target="_blank" class="btn btn-external-feedback">Feedback (Google Form)</a>
+        </footer>
+    </div>
+
+
+    <div id="notification" class="notification"></div>
+
+    <script>
+        // Game Data
+        const gameData = {
+            money: 130000000000, // $130 Billion
+            initialMoney: 130000000000,
+            purchases: [],
+            items: [
+                {
+                    category: "🏠 Luxury",
+                    items: [
+                        { name: "Luxury Yacht", price: 100000000 },
+                        { name: "Private Jet", price: 70000000 },
+                        { name: "Superyacht", price: 500000000 },
+                        { name: "Mansion", price: 50000000 },
+                        { name: "Private Island", price: 100000000 }
+                    ]
+                },
+                {
+                    category: "💻 Tech",
+                    items: [
+                        { name: "Twitter (X)", price: 44000000000 },
+                        { name: "Netflix", price: 100000000000 },
+                        { name: "NBA Team", price: 3000000000 },
+                        { name: "AI Startup", price: 5000000000 },
+                        { name: "SpaceX Shares", price: 10000000000 }
+                    ]
+                },
+                {
+                    category: "❤️ Charity",
+                    items: [
+                        { name: "End World Hunger", price: 30000000000 },
+                        { name: "Global Education", price: 50000000000 },
+                        { name: "Vaccinate Africa", price: 10000000000 },
+                        { name: "Build Hospitals", price: 20000000000 },
+                        { name: "Climate Research", price: 50000000000 }
+                    ]
+                },
+                {
+                    category: "🎲 Random",
+                    items: [
+                        { name: "Lifetime Pizza Supply", price: 1000000 },
+                        { name: "Gold Toilet", price: 5000000 },
+                        { name: "Moon Rock", price: 10000000 },
+                        { name: "Diamond Watch", price: 500000 },
+                        { name: "Sports Car Collection", price: 10000000 }
+                    ]
+                }
+            ]
+        };
+
+        // DOM Elements
+        const elements = {
+            money: document.getElementById('money'),
+            moneyProgress: document.getElementById('money-progress'),
+            itemsContainer: document.getElementById('items-container'),
+            purchasesList: document.getElementById('purchases-list'),
+            totalSpent: document.getElementById('total-spent'),
+            itemsBought: document.getElementById('items-bought'),
+            resetBtn: document.getElementById('reset-btn'),
+            undoBtn: document.getElementById('undo-btn'),
+            feedbackBtn: document.getElementById('feedback-btn'),
+            notification: document.getElementById('notification'),
+            feedbackModal: document.getElementById('feedback-modal'),
+            closeBtn: document.querySelector('.close-btn'),
+            feedbackForm: document.getElementById('feedback-form')
+        };
+
+        // Helper Functions
+        const formatMoney = (amount) => {
+            return '$' + amount.toLocaleString('en-US');
+        };
+
+        const showNotification = (message, type = 'success') => {
+            elements.notification.textContent = message;
+            elements.notification.className = `notification show ${type}`;
+            setTimeout(() => {
+                elements.notification.classList.remove('show');
+            }, 3000);
+        };
+
+        const celebratePurchase = () => {
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+        };
+
+        // Modal Functions
+        const openModal = () => {
+            elements.feedbackModal.style.display = 'flex';
+        };
+
+        const closeModal = () => {
+            elements.feedbackModal.style.display = 'none';
+        };
+
+        // Game Logic
+        const renderItems = () => {
+            let html = '';
+            gameData.items.forEach(category => {
+                html += `
+                    <div class="category">
+                        <div class="category-header">${category.category}</div>
+                        <div class="category-items">
+                            ${category.items.map(item => `
+                                <div class="item">
+                                    <span class="item-name">${item.name}</span>
+                                    <div>
+                                        <span class="item-price">${formatMoney(item.price)}</span>
+                                        <button 
+                                            class="btn btn-buy" 
+                                            data-name="${item.name}" 
+                                            data-price="${item.price}"
+                                            ${gameData.money < item.price ? 'disabled' : ''}
+                                        >
+                                            Buy
+                                        </button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+            elements.itemsContainer.innerHTML = html;
+        };
+
+        const updateUI = () => {
+            // Update money display
+            elements.money.textContent = formatMoney(gameData.money);
+            
+            // Update progress bar
+            const progress = (gameData.money / gameData.initialMoney) * 100;
+            elements.moneyProgress.style.width = `${progress}%`;
+            
+            // Change color if low on money
+            if (gameData.money < 1000000000) {
+                elements.money.style.color = 'var(--danger)';
+                elements.moneyProgress.style.background = 'var(--danger)';
+            } else if (gameData.money < 10000000000) {
+                elements.money.style.color = 'var(--warning)';
+                elements.moneyProgress.style.background = 'var(--warning)';
+            } else {
+                elements.money.style.color = 'var(--success)';
+                elements.moneyProgress.style.background = 'linear-gradient(90deg, var(--success), var(--secondary))';
+            }
+            
+            // Update purchases list
+            elements.purchasesList.innerHTML = gameData.purchases.map(purchase => `
+                <div class="purchase-item">
+                    <span>${purchase.name}</span>
+                    <span>${formatMoney(purchase.price)}</span>
+                </div>
+            `).join('') || '<div>No purchases yet</div>';
+            
+            // Update stats
+            const totalSpent = gameData.initialMoney - gameData.money;
+            elements.totalSpent.textContent = `${formatMoney(totalSpent)} spent`;
+            elements.itemsBought.textContent = `${gameData.purchases.length} items`;
+            
+            // Enable/disable undo button
+            elements.undoBtn.disabled = gameData.purchases.length === 0;
+
+            // Save to localStorage
+            localStorage.setItem('billGatesGame', JSON.stringify(gameData));
+        };
+
+        const buyItem = (name, price) => {
+            if (gameData.money >= price) {
+                gameData.money -= price;
+                gameData.purchases.push({ name, price });
+                updateUI();
+                renderItems();
+                
+                // Celebrate big purchases
+                if (price > 1000000000) celebratePurchase();
+                
+                showNotification(`Purchased: ${name}`, 'success');
+                return true;
+            } else {
+                showNotification(`Not enough money for ${name}`, 'error');
+                return false;
+            }
+        };
+
+        const undoLastPurchase = () => {
+            if (gameData.purchases.length > 0) {
+                const lastPurchase = gameData.purchases.pop();
+                gameData.money += lastPurchase.price;
+                updateUI();
+                renderItems();
+                showNotification(`Undid: ${lastPurchase.name}`, 'success');
+            }
+        };
+
+        const resetGame = () => {
+            gameData.money = gameData.initialMoney;
+            gameData.purchases = [];
+            updateUI();
+            renderItems();
+            showNotification('Game reset!', 'success');
+        };
+
+        const handleFeedbackSubmit = (e) => {
+            e.preventDefault();
+            
+            // Get form data
+            const name = document.getElementById('feedback-name').value;
+            const email = document.getElementById('feedback-email').value;
+            const rating = document.querySelector('input[name="entry.1065046570"]:checked')?.value;
+            const message = document.getElementById('feedback-message').value;
+
+            // Submit to Google Forms
+            const form = e.target;
+            fetch(form.action, {
+                method: 'POST',
+                body: new FormData(form),
+                mode: 'no-cors'
+            }).then(() => {
+                showNotification('Thank you for your feedback!', 'success');
+                closeModal();
+                form.reset();
+            }).catch(() => {
+                showNotification('Feedback sent! (You can close this window)', 'success');
+                closeModal();
+                form.reset();
+            });
+        };
+
+        // Load saved game
+        const loadGame = () => {
+            const savedGame = localStorage.getItem('billGatesGame');
+            if (savedGame) {
+                Object.assign(gameData, JSON.parse(savedGame));
+                updateUI();
+                renderItems();
+            }
+        };
+
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            loadGame();
+            renderItems();
+            updateUI();
+            
+            // Buy button clicks
+            elements.itemsContainer.addEventListener('click', (e) => {
+                if (e.target.classList.contains('btn-buy')) {
+                    const name = e.target.dataset.name;
+                    const price = parseInt(e.target.dataset.price);
+                    buyItem(name, price);
+                }
+            });
+            
+            // Reset & Undo buttons
+            elements.resetBtn.addEventListener('click', resetGame);
+            elements.undoBtn.addEventListener('click', undoLastPurchase);
+            
+            // Feedback button
+            elements.feedbackBtn.addEventListener('click', openModal);
+            elements.closeBtn.addEventListener('click', closeModal);
+            
+            // Close modal when clicking outside
+            elements.feedbackModal.addEventListener('click', (e) => {
+                if (e.target === elements.feedbackModal) {
+                    closeModal();
+                }
+            });
+            
+            // Feedback form submission
+            elements.feedbackForm.addEventListener('submit', handleFeedbackSubmit);
+        });
+    </script>
+</body>
+</html>
